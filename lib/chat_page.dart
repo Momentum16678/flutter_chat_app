@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/chat_bubble.dart';
 import 'package:flutter_chat_app/chat_service.dart';
+import 'package:flutter_chat_app/constants.dart';
+import 'package:nb_utils/nb_utils.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverEmail;
@@ -34,18 +36,39 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.receiverEmail),
+        title: Text(widget.receiverEmail, style: const TextStyle(
+            color: mainTextColor,
+            fontWeight: FontWeight.w700,
+            //fontFamily: StringManager.dmSans,
+            fontSize: 15,
+        ),),
+        automaticallyImplyLeading: false,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 20),
+          child: GestureDetector(
+              onTap: () {
+                pop();
+              },
+              child: Image.asset('assets/images/back_arrow.png', height: 5, width: 5)),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: chatBodyColor,
       ),
-      body: Column(
-        children: [
-          //messages
-          Expanded(child: _buildMessageList()),
+      backgroundColor: chatBodyColor,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          children: [
+            //messages
+            Expanded(child: _buildMessageList()),
 
-          //userInput
-          _buildMessageInput(),
+            //userInput
+            _buildMessageInput(),
 
-          const SizedBox(height: 20,)
-        ],
+            const SizedBox(height: 20,)
+          ],
+        ),
       ),
     );
   }
@@ -56,16 +79,16 @@ class _ChatPageState extends State<ChatPage> {
         widget.receiverUserId,
         _firebaseAuth.currentUser!.uid),
         builder: (context, snapshot){
-         if(snapshot.hasError){
-           return Text('Error${snapshot.error}');
-         }
-         if(snapshot.connectionState == ConnectionState.waiting){
-           return const Text('loading...');
-         }
+          if(snapshot.hasError){
+            return Text('Error${snapshot.error}');
+          }
+          if(snapshot.connectionState == ConnectionState.waiting){
+            return const Center(child:  CircularProgressIndicator());
+          }
 
-         return ListView(
-           children: snapshot.data!.docs.map((document) => _buildMessageItem(document)).toList(),
-         );
+          return ListView(
+            children: snapshot.data!.docs.map((document) => _buildMessageItem(document)).toList(),
+          );
 
         });
   }
@@ -83,9 +106,11 @@ class _ChatPageState extends State<ChatPage> {
         crossAxisAlignment: (data['senderId'] == _firebaseAuth.currentUser!.uid) ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         mainAxisAlignment: (data['senderId'] == _firebaseAuth.currentUser!.uid) ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          Text(data['senderEmail']),
           const SizedBox(height: 5,),
-          ChatBubble(message: data['message'])
+          ChatBubble(message: data['message'], color: (data['senderId'] == _firebaseAuth.currentUser!.uid)
+              ? Colors.white
+              : chatColor,),
+          const SizedBox(height: 5,),
         ],
       ),
     );
@@ -94,16 +119,42 @@ class _ChatPageState extends State<ChatPage> {
   //build message input
   Widget _buildMessageInput() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Expanded(
-              child: TextField(
-                  controller: messageController,
-                  decoration: const InputDecoration(
-                      hintText: "Email",
-                      hintStyle: TextStyle(fontSize: 15, color: Colors.grey)))),
-          IconButton(onPressed: sendMessage, icon: Icon(Icons.send))
+          Flexible(
+            flex: 4,
+            child: TextField(
+                controller: messageController,
+                textInputAction: TextInputAction.done,
+                maxLines: null,
+                decoration: InputDecoration(
+                    hintText: "Type Something...",
+                    hintStyle: TextStyle(
+                        color: mainTextColor.withOpacity(0.8),
+                        fontWeight: FontWeight.w400,
+                        //fontFamily: StringManager.dmSans,
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic
+                    ),
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.only(topLeft: Radius.circular(8.0), bottomLeft: Radius.circular(8.0)),
+                      borderSide: BorderSide.none,),
+                    filled: true,
+                    fillColor: Colors.white
+                )
+            ),
+          ),
+          Flexible(
+            flex: 1,
+            child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 21.5),
+                decoration: const BoxDecoration(
+                    color: primaryColor,
+                  borderRadius: BorderRadius.only(topRight: Radius.circular(8.0), bottomRight: Radius.circular(8.0)),
+                ),
+                child: Center(child: GestureDetector(onTap: sendMessage, child: Image.asset(sendIcon, height: 25, width: 25,)))),
+          )
         ],
       ),
     );
