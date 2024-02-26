@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 const basePath = "assets/images";
 const sendIcon = "$basePath/icon_send.png";
 const backArrow = "$basePath/back_arrow.png";
+const profile = "$basePath/profile_pic.png";
 
 //colors
 const primaryColor = Color(0xFF2E396D);

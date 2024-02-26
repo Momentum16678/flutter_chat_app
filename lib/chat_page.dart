@@ -36,12 +36,28 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.receiverEmail, style: const TextStyle(
-            color: mainTextColor,
-            fontWeight: FontWeight.w700,
-            //fontFamily: StringManager.dmSans,
-            fontSize: 15,
-        ),),
+        title: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: chatBodyColor,
+              child: Image.asset(
+                profile,
+                height: 35,
+                width: 35,
+              ),
+            ),
+            SizedBox(width: 10,),
+            Text(
+              widget.receiverEmail,
+              style: const TextStyle(
+                color: mainTextColor,
+                fontWeight: FontWeight.w700,
+                //fontFamily: StringManager.dmSans,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
         automaticallyImplyLeading: false,
         leading: Padding(
           padding: const EdgeInsets.only(left: 20),
@@ -49,7 +65,7 @@ class _ChatPageState extends State<ChatPage> {
               onTap: () {
                 pop();
               },
-              child: Image.asset('assets/images/back_arrow.png', height: 5, width: 5)),
+              child: Image.asset(backArrow, height: 5, width: 5)),
         ),
         centerTitle: true,
         elevation: 0,
@@ -66,7 +82,9 @@ class _ChatPageState extends State<ChatPage> {
             //userInput
             _buildMessageInput(),
 
-            const SizedBox(height: 20,)
+            const SizedBox(
+              height: 20,
+            )
           ],
         ),
       ),
@@ -74,22 +92,24 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   //build message list
-  _buildMessageList(){
-    return StreamBuilder(stream: _chatService.getMessages(
-        widget.receiverUserId,
-        _firebaseAuth.currentUser!.uid),
-        builder: (context, snapshot){
-          if(snapshot.hasError){
+  _buildMessageList() {
+    return StreamBuilder(
+        stream: _chatService.getMessages(
+            widget.receiverUserId, _firebaseAuth.currentUser!.uid),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
             return Text('Error${snapshot.error}');
           }
-          if(snapshot.connectionState == ConnectionState.waiting){
-            return const Center(child:  CircularProgressIndicator());
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
           }
 
           return ListView(
-            children: snapshot.data!.docs.map((document) => _buildMessageItem(document)).toList(),
+            reverse: true,
+            children: snapshot.data!.docs
+                .map((document) => _buildMessageItem(document))
+                .toList(),
           );
-
         });
   }
 
@@ -103,14 +123,25 @@ class _ChatPageState extends State<ChatPage> {
     return Container(
       alignment: alignment,
       child: Column(
-        crossAxisAlignment: (data['senderId'] == _firebaseAuth.currentUser!.uid) ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        mainAxisAlignment: (data['senderId'] == _firebaseAuth.currentUser!.uid) ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: (data['senderId'] == _firebaseAuth.currentUser!.uid)
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        mainAxisAlignment: (data['senderId'] == _firebaseAuth.currentUser!.uid)
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
-          const SizedBox(height: 5,),
-          ChatBubble(message: data['message'], color: (data['senderId'] == _firebaseAuth.currentUser!.uid)
-              ? Colors.white
-              : chatColor,),
-          const SizedBox(height: 5,),
+          const SizedBox(
+            height: 5,
+          ),
+          ChatBubble(
+            message: data['message'],
+            color: (data['senderId'] == _firebaseAuth.currentUser!.uid)
+                ? Colors.white
+                : chatColor,
+          ),
+          const SizedBox(
+            height: 5,
+          ),
         ],
       ),
     );
@@ -126,7 +157,7 @@ class _ChatPageState extends State<ChatPage> {
             flex: 4,
             child: TextField(
                 controller: messageController,
-                textInputAction: TextInputAction.done,
+                textInputAction: TextInputAction.newline,
                 maxLines: null,
                 decoration: InputDecoration(
                     hintText: "Type Something...",
@@ -135,25 +166,35 @@ class _ChatPageState extends State<ChatPage> {
                         fontWeight: FontWeight.w400,
                         //fontFamily: StringManager.dmSans,
                         fontSize: 14,
-                        fontStyle: FontStyle.italic
-                    ),
+                        fontStyle: FontStyle.italic),
                     border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.only(topLeft: Radius.circular(8.0), bottomLeft: Radius.circular(8.0)),
-                      borderSide: BorderSide.none,),
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(8.0),
+                          bottomLeft: Radius.circular(8.0)),
+                      borderSide: BorderSide.none,
+                    ),
                     filled: true,
-                    fillColor: Colors.white
-                )
-            ),
+                    fillColor: Colors.white)),
           ),
           Flexible(
             flex: 1,
             child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 21.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 21.5),
                 decoration: const BoxDecoration(
-                    color: primaryColor,
-                  borderRadius: BorderRadius.only(topRight: Radius.circular(8.0), bottomRight: Radius.circular(8.0)),
+                  color: primaryColor,
+                  borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(8.0),
+                      bottomRight: Radius.circular(8.0)),
                 ),
-                child: Center(child: GestureDetector(onTap: sendMessage, child: Image.asset(sendIcon, height: 25, width: 25,)))),
+                child: Center(
+                    child: GestureDetector(
+                        onTap: sendMessage,
+                        child: Image.asset(
+                          sendIcon,
+                          height: 25,
+                          width: 25,
+                        )))),
           )
         ],
       ),
